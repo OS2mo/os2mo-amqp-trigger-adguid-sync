@@ -20,6 +20,7 @@ from adguidsync.config import Settings
         (
             {
                 "CLIENT_SECRET": "Hunter2",
+                "CLIENT_ID": "dipex",
             },
             [
                 "ad_controllers",
@@ -32,6 +33,7 @@ from adguidsync.config import Settings
         (
             {
                 "CLIENT_SECRET": "Hunter2",
+                "CLIENT_ID": "dipex",
                 "AD_CONTROLLERS": "[]",
             },
             [

@@ -10,6 +10,7 @@ stages:
 
 
 variables:
+  POETRY_VERSION: "1.3"
   IMAGE_SHA: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
 
   RELEASE_REGISTRY: docker.io

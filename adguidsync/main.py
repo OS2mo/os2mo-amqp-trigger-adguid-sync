@@ -15,7 +15,6 @@ from uuid import UUID
 import structlog
 from fastapi import APIRouter
 from fastapi import FastAPI
-from fastapi import Query
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastramqpi.context import Context
@@ -71,7 +70,7 @@ async def update_all_employees(request: Request) -> dict[str, Any]:
 )
 async def update_employee(
     request: Request,
-    uuid: UUID = Query(..., description="UUID of the employee to recalculate"),
+    uuid: UUID,
 ) -> dict[str, Any]:
     """Call ensure_adguid_itsystem on the provided employee."""
     context: Context = request.app.state.context
