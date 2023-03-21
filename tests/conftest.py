@@ -21,6 +21,7 @@ def settings_overrides() -> Iterator[dict[str, str]]:
     """
     overrides = {
         "CLIENT_SECRET": "Hunter2",
+        "CLIENT_ID": "dipex",
         "AD_CONTROLLERS": '[{"host": "localhost"}]',
         "AD_DOMAIN": "Kommune",
         "AD_PASSWORD": "Hunter2",

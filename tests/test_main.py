@@ -103,14 +103,14 @@ def test_create_fastramqpi(
 
 async def test_root_endpoint(test_client: TestClient) -> None:
     """Test the root endpoint on our app."""
-    response = test_client.get("/")
+    response = test_client.request("get", "/")
     assert response.status_code == 200
     assert response.json() == {"name": "adguidsync"}
 
 
 async def test_liveness_endpoint(test_client: TestClient) -> None:
     """Test the liveness endpoint on our app."""
-    response = test_client.get("/health/live")
+    response = test_client.request("get", "/health/live")
     assert response.status_code == 204
 
 
@@ -138,7 +138,7 @@ async def test_readiness_endpoint(
 
     ad_connection.bound = False
     with capture_logs() as captured_logs:
-        response = test_client.get("/health/ready")
+        response = test_client.request("get", "/health/ready")
         assert response.status_code == 503
     assert captured_logs == [
         {"event": "ADConnection is not ready", "log_level": "warning"}
@@ -146,7 +146,7 @@ async def test_readiness_endpoint(
 
     ad_connection.bound = True
     with capture_logs() as captured_logs:
-        response = test_client.get("/health/ready")
+        response = test_client.request("get", "/health/ready")
         assert response.status_code == 204
     assert captured_logs == []
 
@@ -196,7 +196,7 @@ async def test_update_employee_endpoint(
     ) as result_mock:
         result_mock.return_value = success
 
-        response = test_client.post(f"/trigger/{str(random_uuid)}")
+        response = test_client.request("post", f"/trigger/{str(random_uuid)}")
 
         result_mock.assert_called_with(
             random_uuid, settings="Whatever", dataloaders="Whatever"
@@ -221,7 +221,7 @@ async def test_update_employee_endpoint_exception(
         result_mock.side_effect = exception
 
         with capture_logs() as captured_logs:
-            response = test_client.post(f"/trigger/{str(random_uuid)}")
+            response = test_client.request("post", f"/trigger/{str(random_uuid)}")
         captured_log = one(captured_logs)
         traceback = captured_log.pop("trace")
         assert captured_log == {
@@ -257,7 +257,7 @@ async def test_update_no_employees_endpoint(
     ) as result_mock:
         result_mock.return_value = True
 
-        response = test_client.post("/trigger/all")
+        response = test_client.request("post", "/trigger/all")
 
         result_mock.assert_not_called()
 
@@ -285,7 +285,7 @@ async def test_update_all_employees_endpoint(
     ) as result_mock:
         result_mock.return_value = True
 
-        response = test_client.post("/trigger/all")
+        response = test_client.request("post", "/trigger/all")
 
         result_mock.assert_has_calls(
             [call(uuid, settings="Whatever", dataloaders="Whatever") for uuid in uuids]
