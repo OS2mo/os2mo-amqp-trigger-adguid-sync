@@ -139,6 +139,57 @@ async def test_load_adguid(ad_connection: MagicMock, dataloaders: Dataloaders) -
     )
 
 
+@pytest.mark.settings_overrides({"ad_cpr_separator": "-"})
+async def test_load_adguid_with_separator(
+    ad_connection: MagicMock, dataloaders: Dataloaders
+) -> None:
+    """Test that load_adguid works as expected."""
+    uuid1 = uuid4()
+    uuid2 = uuid4()
+    ad_connection.response_to_json.return_value = json.dumps(
+        {
+            "entries": [
+                {
+                    "attributes": {
+                        "extensionAttribute3": "010169-0420",
+                        "objectGUID": f"{str(uuid2)}",
+                    },
+                    "dn": "CN=Hanne Efternavn,OU=...,DC=Kommune,DC=net",
+                },
+                {
+                    "attributes": {
+                        "extensionAttribute3": "010170-9999",
+                        "objectGUID": f"{str(uuid1)}",
+                    },
+                    "dn": "CN=John Efternavn,OU=...,DC=Kommune,DC=net",
+                },
+            ]
+        }
+    )
+
+    results = await asyncio.gather(
+        dataloaders.adguid_loader.load("1212121212"),
+        dataloaders.adguid_loader.load("0101709999"),
+        dataloaders.adguid_loader.load("1111111111"),
+        dataloaders.adguid_loader.load("0101690420"),
+    )
+    assert results == [None, uuid1, None, uuid2]
+    ad_connection.response_to_json.assert_called_with()
+    ad_connection.search.assert_called_with(
+        search_base="OU=Fiktiv kommune,DC=fiktiv,DC=net",
+        search_filter=(
+            "(&(objectclass=user)(|"
+            "(extensionAttribute3=121212-1212)"
+            "(extensionAttribute3=010170-9999)"
+            "(extensionAttribute3=111111-1111)"
+            "(extensionAttribute3=010169-0420)"
+            "))"
+        ),
+        search_scope="SUBTREE",
+        attributes=["extensionAttribute3", "objectGUID"],
+    )
+
+
 async def test_load_itsystem(
     graphql_session: AsyncMock, dataloaders: Dataloaders
 ) -> None:

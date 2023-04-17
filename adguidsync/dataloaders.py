@@ -177,6 +177,7 @@ async def load_adguid(
     ad_connection: Connection,
     cpr_attribute: str,
     search_base: str,
+    separator: str,
 ) -> list[UUID | None]:
     """Loads AD GUIDs (UUIDs) from CPR numbers.
 
@@ -185,12 +186,15 @@ async def load_adguid(
         ad_connection: The AD connection to run queries on.
         cpr_attribute: The AD field which contains the CPR Number.
         search_base: The AD search base to use for all queries.
+        separator: The separator between birthdate and last four digits.
 
     Return:
         List of ADGUIDs.
     """
+    cprs = [f"{cpr[:6]}{separator}{cpr[6:]}" for cpr in keys]
+
     # Construct our search filter by OR'ing all CPR numbers together
-    cpr_conditions = "".join(map(lambda cpr: f"({cpr_attribute}={cpr})", keys))
+    cpr_conditions = "".join(map(lambda cpr: f"({cpr_attribute}={cpr})", cprs))
     search_filter = "(&(objectclass=user)(|" + cpr_conditions + "))"
 
     ad_connection.search(
@@ -205,7 +209,7 @@ async def load_adguid(
     ad_response = json.loads(json_str)
 
     cpr_to_uuid_map = ad_response_to_cpr_uuid_map(ad_response, cpr_attribute)
-    return [cpr_to_uuid_map.get(key) for key in keys]
+    return [cpr_to_uuid_map.get(cpr) for cpr in cprs]
 
 
 # TODO: Trim down the return value here by understanding model_client
@@ -260,6 +264,7 @@ def configure_dataloaders(context: Context) -> Dataloaders:
             ad_connection=ad_connection,
             cpr_attribute=settings.ad_cpr_attribute,
             search_base=settings.ad_search_base,
+            separator=settings.ad_cpr_separator,
         ),
         cache=False,
     )
