@@ -13,12 +13,18 @@ from adguidsync.config import Settings
 
 
 @pytest.fixture
-def settings_overrides() -> Iterator[dict[str, str]]:
+def settings_overrides(request: pytest.FixtureRequest) -> Iterator[dict[str, str]]:
     """Fixture to construct dictionary of minimal overrides for valid settings.
+
+    You can manually override settings for a given test by marking it. For
+    instance, to override "ad_cpr_separator", mark your test with:
+        @pytest.mark.settings_overrides({"ad_cpr_separator": "-"})
+    See: https://docs.pytest.org/en/7.1.x/how-to/fixtures.html#using-markers-to-pass-data-to-fixtures  # noqa # pylint: disable=line-too-long
 
     Yields:
         Minimal set of overrides.
     """
+    local_overrides = request.node.get_closest_marker("settings_overrides")
     overrides = {
         "CLIENT_SECRET": "Hunter2",
         "CLIENT_ID": "dipex",
@@ -28,6 +34,8 @@ def settings_overrides() -> Iterator[dict[str, str]]:
         "AD_CPR_ATTRIBUTE": "extensionAttribute3",
         "AD_SEARCH_BASE": "OU=Fiktiv kommune,DC=fiktiv,DC=net",
     }
+    if local_overrides is not None:
+        overrides.update(local_overrides.args[0])
     yield overrides
 
 

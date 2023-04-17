@@ -74,6 +74,10 @@ class Settings(BaseSettings):
     ad_cpr_attribute: str = Field(
         ..., description="AD attribute which contains the CPR number"
     )
+    ad_cpr_separator: str = Field(
+        "",
+        description="Separator between birthdate and last four digits in CPR",
+    )
     ad_search_base: str = Field(
         ..., description="Search base to utilize for all AD requests"
     )
